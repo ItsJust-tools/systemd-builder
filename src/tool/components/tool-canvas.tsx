@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { SystemdUnit, UnitSection } from '../types';
 import {
   generateUnitFile,
@@ -25,7 +25,7 @@ function SectionFieldEditor({
   sectionIndex: number;
   onUpdateSection: (index: number, section: UnitSection) => void;
 }) {
-  const suggestions = SECTION_FIELD_SUGGESTIONS[section.name] || [];
+  const suggestions = useMemo(() => SECTION_FIELD_SUGGESTIONS[section.name] || [], [section.name]);
 
   const addField = useCallback(() => {
     const firstSuggestion = suggestions[0] || 'Key';

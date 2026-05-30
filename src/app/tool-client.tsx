@@ -11,6 +11,7 @@ import {
   ToolToolbar,
   ToolSidebar,
 } from '@/tool';
+import type { SystemdUnit } from '@/tool';
 
 export default function ToolClient() {
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -32,7 +33,7 @@ export default function ToolClient() {
   }, [title]);
 
   const handleStateChange = useCallback(
-    (newState: typeof tool.state.data) => {
+    (newState: SystemdUnit) => {
       setToolData(newState);
     },
     [setToolData]
@@ -56,7 +57,7 @@ export default function ToolClient() {
       const message = error instanceof Error ? error.message : 'Failed to load shared URL';
       showToast(message, 'error');
     }
-  }, [setToolData, showToast]);
+  }, [setToolData, showToast, tool]);
 
   const handleShare = useCallback(async () => {
     setIsSharing(true);

@@ -1,5 +1,8 @@
 # systemd Unit Builder
 
+[![CI](https://github.com/ItsJustOpen/sysjust-systemd-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/ItsJustOpen/sysjust-systemd-builder/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A visual tool for building systemd unit files — services, timers, sockets, mount points, and more.
 
 Built for [ItsJust](https://itsjust.app), a collection of small, focused web utilities.

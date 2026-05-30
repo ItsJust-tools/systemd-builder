@@ -1,7 +1,13 @@
 {
   "name": "systemd-builder",
   "version": "1.0.0",
+  "description": "A visual builder for systemd unit files — create and customize .service, .timer, .socket, .mount, and more.",
   "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ItsJustOpen/sysjust-systemd-builder.git"
+  },
   "workspaces": [
     "packages/*"
   ],

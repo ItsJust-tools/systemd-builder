@@ -1,7 +1,7 @@
 import type { Tool } from '@itsjust/core';
 import toolConfig from './tool.config';
 import type { SystemdUnit } from './types';
-import { UNIT_TYPE_DESCRIPTIONS, DEFAULT_SECTIONS } from './types';
+import { DEFAULT_SECTIONS } from './types';
 
 function isSystemdUnitState(value: unknown): value is SystemdUnit {
   if (typeof value !== 'object' || value === null) return false;
