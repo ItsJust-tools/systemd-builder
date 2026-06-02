@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useRef } from 'react';
 import type { SystemdUnit, UnitSection } from '../types';
 import {
   generateUnitFile,
@@ -20,10 +20,14 @@ function SectionFieldEditor({
   section,
   sectionIndex,
   onUpdateSection,
+  onMoveSection,
+  sectionCount,
 }: {
   section: UnitSection;
   sectionIndex: number;
   onUpdateSection: (index: number, section: UnitSection) => void;
+  onMoveSection: (from: number, to: number) => void;
+  sectionCount: number;
 }) {
   const suggestions = useMemo(() => SECTION_FIELD_SUGGESTIONS[section.name] || [], [section.name]);
 
@@ -61,14 +65,36 @@ function SectionFieldEditor({
     <div className="systemd-section">
       <div className="section-header-row">
         <h3 className="section-title">[{section.name}]</h3>
-        <button
-          type="button"
-          className="btn btn-sm btn-add-field"
-          onClick={addField}
-          aria-label={`Add field to ${section.name}`}
-        >
-          + Add Field
-        </button>
+        <div className="section-header-actions">
+          <button
+            type="button"
+            className="btn btn-sm btn-move-section"
+            onClick={() => onMoveSection(sectionIndex, sectionIndex - 1)}
+            disabled={sectionIndex === 0}
+            aria-label={`Move ${section.name} up`}
+            title="Move section up"
+          >
+            ▲
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-move-section"
+            onClick={() => onMoveSection(sectionIndex, sectionIndex + 1)}
+            disabled={sectionIndex === sectionCount - 1}
+            aria-label={`Move ${section.name} down`}
+            title="Move section down"
+          >
+            ▼
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-add-field"
+            onClick={addField}
+            aria-label={`Add field to ${section.name}`}
+          >
+            + Add Field
+          </button>
+        </div>
       </div>
 
       {section.fields.length === 0 && (
@@ -150,6 +176,13 @@ function SectionFieldEditor({
 
 export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const hasAnyFields = useMemo(
+    () => state.sections.some((s) => s.fields.length > 0),
+    [state.sections]
+  );
 
   const handleUnitTypeChange = useCallback(
     (newType: SystemdUnit['unitType']) => {
@@ -181,6 +214,35 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
     },
     [state, onChange]
   );
+
+  const moveSection = useCallback(
+    (from: number, to: number) => {
+      if (to < 0 || to >= state.sections.length) return;
+      const newSections = [...state.sections];
+      const [moved] = newSections.splice(from, 1);
+      if (!moved) return;
+      newSections.splice(to, 0, moved);
+      onChange({ ...state, sections: newSections });
+    },
+    [state, onChange]
+  );
+
+  const clearAllFields = useCallback(() => {
+    const emptySections = state.sections.map((s) => ({
+      ...s,
+      fields: [],
+    }));
+    onChange({ ...state, sections: emptySections });
+  }, [state, onChange]);
+
+  const handleCopy = useCallback(() => {
+    const generated = generateUnitFile(state);
+    navigator.clipboard.writeText(generated).then(() => {
+      setCopied(true);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
+    });
+  }, [state]);
 
   const generated = generateUnitFile(state);
 
@@ -225,6 +287,19 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
         </div>
       </div>
 
+      {/* Action Bar */}
+      <div className="action-bar">
+        <button
+          type="button"
+          className="btn btn-sm btn-clear-all"
+          onClick={clearAllFields}
+          disabled={!hasAnyFields}
+          aria-label="Clear all fields"
+        >
+          ✕ Clear All Fields
+        </button>
+      </div>
+
       {/* Section Editors */}
       <div className="sections-list">
         {state.sections.map((section, i) => (
@@ -233,18 +308,21 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
             section={section}
             sectionIndex={i}
             onUpdateSection={updateSection}
+            onMoveSection={moveSection}
+            sectionCount={state.sections.length}
           />
         ))}
       </div>
 
-      {/* Preview Toggle */}
+      {/* Preview Section */}
       <div className="preview-section">
         <button
           type="button"
           className="btn btn-preview-toggle"
           onClick={() => setPreviewOpen(!previewOpen)}
+          aria-expanded={previewOpen}
         >
-          {previewOpen ? 'Hide Preview' : 'Show Preview'}
+          {previewOpen ? '⊟ Hide Preview' : '⊞ Show Preview'}
         </button>
 
         {previewOpen && (
@@ -253,12 +331,10 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
             <button
               type="button"
               className="btn btn-copy"
-              onClick={() => {
-                navigator.clipboard.writeText(generated);
-              }}
+              onClick={handleCopy}
               aria-label="Copy unit file to clipboard"
             >
-              📋 Copy to Clipboard
+              {copied ? '✓ Copied!' : '📋 Copy to Clipboard'}
             </button>
           </div>
         )}

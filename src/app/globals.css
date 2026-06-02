@@ -886,6 +886,12 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.section-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 .section-title {
   font-size: 0.9375rem;
   font-weight: 700;
@@ -1012,6 +1018,52 @@ body {
   font-weight: 600;
 }
 
+.btn-move-section {
+  min-width: 1.5rem;
+  padding: 0.125rem 0.25rem;
+  font-size: 0.625rem;
+  border-color: transparent;
+  color: var(--muted);
+}
+
+.btn-move-section:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+.btn-move-section:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Action bar */
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.25rem;
+}
+
+.btn-clear-all {
+  border-color: var(--error);
+  color: var(--error);
+  background: rgba(239, 68, 68, 0.06);
+}
+
+.btn-clear-all:hover:not(:disabled) {
+  background: var(--error);
+  color: #fff;
+}
+
+.btn-clear-all:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: var(--border);
+  color: var(--muted);
+  background: transparent;
+}
+
 .unit-preview {
   background: var(--background);
   border: 1px solid var(--border);
@@ -1076,7 +1128,9 @@ body {
   .btn-preview-toggle,
   .btn-copy,
   .btn-add-field,
-  .btn-remove-field {
+  .btn-remove-field,
+  .btn-move-section,
+  .btn-clear-all {
     display: none !important;
   }
 

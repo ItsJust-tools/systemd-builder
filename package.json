@@ -2,12 +2,14 @@
   "name": "systemd-builder",
   "version": "1.0.0",
   "description": "A visual builder for systemd unit files — create and customize .service, .timer, .socket, .mount, and more.",
+  "keywords": ["systemd", "unit", "builder", "service", "timer", "socket", "mount", "systemd-unit", "itsjust"],
   "private": true,
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ItsJustOpen/sysjust-systemd-builder.git"
+    "url": "git+https://github.com/ItsJust-tools/systemd-builder.git"
   },
+  "homepage": "https://systemd-builder.itsjust.tools",
   "workspaces": [
     "packages/*"
   ],
@@ -58,19 +60,19 @@
     "@types/node": "^25",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitejs/plugin-react": "^5.2.0",
+    "@vitejs/plugin-react": "^6.0.2",
     "@vitest/coverage-v8": "^4.1.6",
     "depcheck": "^1.4.7",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.6",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.6",
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",
-    "lint-staged": "^15.2.10",
+    "lint-staged": "^17.0.7",
     "prettier": "^3.4.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "tsup": "^8.5.1",
-    "typescript": "^5",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.5"
   },
   "optionalDependencies": {
