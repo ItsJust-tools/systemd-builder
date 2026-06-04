@@ -20,19 +20,25 @@ function SectionFieldEditor({
   section,
   sectionIndex,
   onUpdateSection,
+  onUpdateSectionName,
+  onRemoveSection,
+  onAddSection,
   onMoveSection,
   sectionCount,
 }: {
   section: UnitSection;
   sectionIndex: number;
   onUpdateSection: (index: number, section: UnitSection) => void;
+  onUpdateSectionName: (index: number, name: string) => void;
+  onRemoveSection: (index: number) => void;
+  onAddSection: (index: number) => void;
   onMoveSection: (from: number, to: number) => void;
   sectionCount: number;
 }) {
   const suggestions = useMemo(() => SECTION_FIELD_SUGGESTIONS[section.name] || [], [section.name]);
 
   const addField = useCallback(() => {
-    const firstSuggestion = suggestions[0] || 'Key';
+    const firstSuggestion = suggestions[0] || '';
     const valueHint = section.name === 'Service' && firstSuggestion === 'ExecStart'
       ? '/usr/bin/'
       : 'value';
@@ -59,6 +65,37 @@ function SectionFieldEditor({
       onUpdateSection(sectionIndex, { ...section, fields: newFields });
     },
     [section, sectionIndex, onUpdateSection]
+  );
+
+  const handleValueKeyDown = useCallback(
+    (e: React.KeyboardEvent, fieldIndex: number) => {
+      // Enter on the last field's value input adds a new field
+      if (e.key === 'Enter' && !e.shiftKey && fieldIndex === section.fields.length - 1) {
+        e.preventDefault();
+        addField();
+      }
+      // Escape blurs the input
+      if (e.key === 'Escape') {
+        (e.target as HTMLElement).blur();
+      }
+    },
+    [addField, section.fields.length]
+  );
+
+  const handleKeySelectKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      // Enter on key select moves focus to value input
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const target = e.target as HTMLElement;
+        const row = target.closest('.field-row');
+        if (row) {
+          const valueInput = row.querySelector('.field-value-input') as HTMLElement;
+          valueInput?.focus();
+        }
+      }
+    },
+    []
   );
 
   return (
@@ -94,30 +131,45 @@ function SectionFieldEditor({
           >
             + Add Field
           </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-remove-section"
+            onClick={() => onRemoveSection(sectionIndex)}
+            disabled={sectionCount <= 1}
+            aria-label={`Remove ${section.name} section`}
+            title="Remove section"
+          >
+            ✕ Section
+          </button>
         </div>
       </div>
 
       {section.fields.length === 0 && (
-        <p className="section-placeholder">No fields yet. Click &quot;+ Add Field&quot; to begin.</p>
+        <p className="section-placeholder">No fields yet. Click &quot;+ Add Field&quot; or press Enter on a value field to begin.</p>
       )}
 
       {section.fields.map((field, fieldIndex) => {
-        const fieldSuggestions = suggestions.filter((s) => s !== field.key);
+        const allSuggestions = SECTION_FIELD_SUGGESTIONS[section.name] || [];
+        const datalistId = `field-keys-${sectionIndex}`;
         return (
           <div key={fieldIndex} className="field-row">
             <div className="field-controls">
-              <select
-                className="field-key-select"
+              <input
+                className="field-key-input"
+                type="text"
                 value={field.key}
                 onChange={(e) => updateField(fieldIndex, e.target.value, field.value)}
+                onKeyDown={handleKeySelectKeyDown}
+                placeholder="Key"
                 aria-label={`Field name in ${section.name}`}
-              >
-                {[field.key, ...fieldSuggestions].map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
+                spellCheck={false}
+                list={datalistId}
+              />
+              <datalist id={datalistId}>
+                {allSuggestions.map((opt) => (
+                  <option key={opt} value={opt} />
                 ))}
-              </select>
+              </datalist>
 
               {field.key === 'Type' && section.name === 'Service' ? (
                 <select
@@ -151,6 +203,7 @@ function SectionFieldEditor({
                   type="text"
                   value={field.value}
                   onChange={(e) => updateField(fieldIndex, field.key, e.target.value)}
+                  onKeyDown={(e) => handleValueKeyDown(e, fieldIndex)}
                   placeholder="value"
                   aria-label={`Value for ${field.key}`}
                   spellCheck={false}
@@ -161,7 +214,7 @@ function SectionFieldEditor({
                 type="button"
                 className="btn btn-remove-field"
                 onClick={() => removeField(fieldIndex)}
-                aria-label={`Remove ${field.key}`}
+                aria-label={`Remove ${field.key || 'field'}`}
                 title="Remove field"
               >
                 ✕
@@ -182,6 +235,11 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
   const hasAnyFields = useMemo(
     () => state.sections.some((s) => s.fields.length > 0),
     [state.sections]
+  );
+
+  const allSectionNames = useMemo(
+    () => Object.keys(SECTION_FIELD_SUGGESTIONS).sort(),
+    []
   );
 
   const handleUnitTypeChange = useCallback(
@@ -210,6 +268,33 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
     (index: number, section: UnitSection) => {
       const newSections = [...state.sections];
       newSections[index] = section;
+      onChange({ ...state, sections: newSections });
+    },
+    [state, onChange]
+  );
+
+  const updateSectionName = useCallback(
+    (index: number, name: string) => {
+      const newSections = [...state.sections];
+      newSections[index] = { ...newSections[index], name };
+      onChange({ ...state, sections: newSections });
+    },
+    [state, onChange]
+  );
+
+  const addSection = useCallback(
+    (afterIndex: number) => {
+      const newSections = [...state.sections];
+      newSections.splice(afterIndex + 1, 0, { name: 'Unit', fields: [] });
+      onChange({ ...state, sections: newSections });
+    },
+    [state, onChange]
+  );
+
+  const removeSection = useCallback(
+    (index: number) => {
+      if (state.sections.length <= 1) return;
+      const newSections = state.sections.filter((_, i) => i !== index);
       onChange({ ...state, sections: newSections });
     },
     [state, onChange]
@@ -308,6 +393,9 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
             section={section}
             sectionIndex={i}
             onUpdateSection={updateSection}
+            onUpdateSectionName={updateSectionName}
+            onRemoveSection={removeSection}
+            onAddSection={addSection}
             onMoveSection={moveSection}
             sectionCount={state.sections.length}
           />

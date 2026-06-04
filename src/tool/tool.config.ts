@@ -8,7 +8,7 @@ const toolConfig = {
   name: 'systemd Unit Builder',
   description:
     'Build, edit, and export systemd unit files (services, timers, sockets, mount points, and more). Visual form-based editor with proper syntax output.',
-  version: '1.0.0',
+  version: '1.1.0',
   exportFormats: ['json', 'png', 'jpeg', 'webp', 'pdf'],
   features: {
     export: true,
