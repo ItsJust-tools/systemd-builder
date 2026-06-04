@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/ItsJust-tools/systemd-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/ItsJust-tools/systemd-builder/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![npm](https://img.shields.io/badge/version-1.0.0-blue)](https://github.com/ItsJust-tools/systemd-builder)
+[![npm](https://img.shields.io/badge/version-1.1.0-blue)](https://github.com/ItsJust-tools/systemd-builder)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 A visual tool for building [systemd](https://systemd.io/) unit files — services, timers, sockets, mount points, and more. No manual syntax needed.
