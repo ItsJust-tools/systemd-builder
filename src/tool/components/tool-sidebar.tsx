@@ -16,9 +16,9 @@ export function ToolSidebar({ state }: ToolSidebarProps) {
   // Validation — warn about empty keys or values
   const validationWarnings: string[] = [];
   for (let i = 0; i < state.sections.length; i++) {
-    const section = state.sections[i];
+    const section = state.sections[i]!;
     for (let j = 0; j < section.fields.length; j++) {
-      const field = section.fields[j];
+      const field = section.fields[j]!;
       if (!field.key.trim() && !field.value.trim()) continue; // both empty = unused row
       if (!field.key.trim()) {
         validationWarnings.push(`[${section.name}] field #${j + 1}: missing key`);

@@ -20,7 +20,6 @@ function SectionFieldEditor({
   section,
   sectionIndex,
   onUpdateSection,
-  onUpdateSectionName,
   onRemoveSection,
   onAddSection,
   onMoveSection,
@@ -29,9 +28,8 @@ function SectionFieldEditor({
   section: UnitSection;
   sectionIndex: number;
   onUpdateSection: (index: number, section: UnitSection) => void;
-  onUpdateSectionName: (index: number, name: string) => void;
   onRemoveSection: (index: number) => void;
-  onAddSection: (index: number) => void;
+  onAddSection: (afterIndex: number) => void;
   onMoveSection: (from: number, to: number) => void;
   sectionCount: number;
 }) {
@@ -237,11 +235,6 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
     [state.sections]
   );
 
-  const allSectionNames = useMemo(
-    () => Object.keys(SECTION_FIELD_SUGGESTIONS).sort(),
-    []
-  );
-
   const handleUnitTypeChange = useCallback(
     (newType: SystemdUnit['unitType']) => {
       const defaultSections = DEFAULT_SECTIONS[newType] || ['Unit', 'Install'];
@@ -273,19 +266,12 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
     [state, onChange]
   );
 
-  const updateSectionName = useCallback(
-    (index: number, name: string) => {
-      const newSections = [...state.sections];
-      newSections[index] = { ...newSections[index], name };
-      onChange({ ...state, sections: newSections });
-    },
-    [state, onChange]
-  );
+  // updateSectionName is intentionally unused but kept for future section rename feature
 
   const addSection = useCallback(
     (afterIndex: number) => {
-      const newSections = [...state.sections];
-      newSections.splice(afterIndex + 1, 0, { name: 'Unit', fields: [] });
+      const newSections: UnitSection[] = [...state.sections];
+      newSections.splice(afterIndex + 1, 0, { name: 'Unit' as const, fields: [] });
       onChange({ ...state, sections: newSections });
     },
     [state, onChange]
@@ -393,13 +379,27 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
             section={section}
             sectionIndex={i}
             onUpdateSection={updateSection}
-            onUpdateSectionName={updateSectionName}
             onRemoveSection={removeSection}
             onAddSection={addSection}
             onMoveSection={moveSection}
             sectionCount={state.sections.length}
           />
         ))}
+      </div>
+
+      {/* Add Section Button */}
+      <div className="action-bar add-section-bar">
+        <button
+          type="button"
+          className="btn btn-add-section"
+          onClick={() => addSection(state.sections.length - 1)}
+          aria-label="Add a new section"
+        >
+          + Add Section
+        </button>
+        <span className="add-section-hint">
+          Type any systemd section name (e.g., Unit, Service, Install, Timer, Socket, Mount, Automount, Path, Target)
+        </span>
       </div>
 
       {/* Preview Section */}
