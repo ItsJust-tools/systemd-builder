@@ -23,6 +23,7 @@ function SectionFieldEditor({
   onRemoveSection,
   onAddSection,
   onMoveSection,
+  onUpdateSectionName,
   sectionCount,
 }: {
   section: UnitSection;
@@ -31,6 +32,7 @@ function SectionFieldEditor({
   onRemoveSection: (index: number) => void;
   onAddSection: (afterIndex: number) => void;
   onMoveSection: (from: number, to: number) => void;
+  onUpdateSectionName: (index: number, name: string) => void;
   sectionCount: number;
 }) {
   const suggestions = useMemo(() => SECTION_FIELD_SUGGESTIONS[section.name] || [], [section.name]);
@@ -99,7 +101,14 @@ function SectionFieldEditor({
   return (
     <div className="systemd-section">
       <div className="section-header-row">
-        <h3 className="section-title">[{section.name}]</h3>
+        <input
+          className="section-title-input"
+          type="text"
+          value={section.name}
+          onChange={(e) => onUpdateSectionName(sectionIndex, e.target.value)}
+          aria-label={`Section name for section ${sectionIndex + 1}`}
+          spellCheck={false}
+        />
         <div className="section-header-actions">
           <button
             type="button"
@@ -266,7 +275,14 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
     [state, onChange]
   );
 
-  // updateSectionName is intentionally unused but kept for future section rename feature
+  const updateSectionName = useCallback(
+    (index: number, name: string) => {
+      const newSections = [...state.sections];
+      newSections[index] = { ...newSections[index], name };
+      onChange({ ...state, sections: newSections });
+    },
+    [state, onChange]
+  );
 
   const addSection = useCallback(
     (afterIndex: number) => {
@@ -333,7 +349,7 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
           >
             {Object.entries(UNIT_TYPE_DESCRIPTIONS).map(([type, desc]) => (
               <option key={type} value={type}>
-                {type}.{type} — {desc}
+                {type} — {desc}
               </option>
             ))}
           </select>
@@ -382,6 +398,7 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
             onRemoveSection={removeSection}
             onAddSection={addSection}
             onMoveSection={moveSection}
+            onUpdateSectionName={updateSectionName}
             sectionCount={state.sections.length}
           />
         ))}
