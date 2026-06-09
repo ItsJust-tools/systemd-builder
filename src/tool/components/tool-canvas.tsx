@@ -21,7 +21,6 @@ function SectionFieldEditor({
   sectionIndex,
   onUpdateSection,
   onRemoveSection,
-  onAddSection,
   onMoveSection,
   onUpdateSectionName,
   sectionCount,
@@ -39,9 +38,8 @@ function SectionFieldEditor({
 
   const addField = useCallback(() => {
     const firstSuggestion = suggestions[0] || '';
-    const valueHint = section.name === 'Service' && firstSuggestion === 'ExecStart'
-      ? '/usr/bin/'
-      : 'value';
+    const valueHint =
+      section.name === 'Service' && firstSuggestion === 'ExecStart' ? '/usr/bin/' : 'value';
     onUpdateSection(sectionIndex, {
       ...section,
       fields: [...section.fields, { key: firstSuggestion, value: valueHint }],
@@ -82,21 +80,18 @@ function SectionFieldEditor({
     [addField, section.fields.length]
   );
 
-  const handleKeySelectKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      // Enter on key select moves focus to value input
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const target = e.target as HTMLElement;
-        const row = target.closest('.field-row');
-        if (row) {
-          const valueInput = row.querySelector('.field-value-input') as HTMLElement;
-          valueInput?.focus();
-        }
+  const handleKeySelectKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Enter on key select moves focus to value input
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const target = e.target as HTMLElement;
+      const row = target.closest('.field-row');
+      if (row) {
+        const valueInput = row.querySelector('.field-value-input') as HTMLElement;
+        valueInput?.focus();
       }
-    },
-    []
-  );
+    }
+  }, []);
 
   return (
     <div className="systemd-section">
@@ -152,7 +147,9 @@ function SectionFieldEditor({
       </div>
 
       {section.fields.length === 0 && (
-        <p className="section-placeholder">No fields yet. Click &quot;+ Add Field&quot; or press Enter on a value field to begin.</p>
+        <p className="section-placeholder">
+          No fields yet. Click &quot;+ Add Field&quot; or press Enter on a value field to begin.
+        </p>
       )}
 
       {section.fields.map((field, fieldIndex) => {
@@ -278,7 +275,7 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
   const updateSectionName = useCallback(
     (index: number, name: string) => {
       const newSections = [...state.sections];
-      newSections[index] = { ...newSections[index], name };
+      newSections[index] = { ...newSections[index], name } as UnitSection;
       onChange({ ...state, sections: newSections });
     },
     [state, onChange]
@@ -368,9 +365,7 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
             placeholder="my-service"
             spellCheck={false}
           />
-          <span className="file-extension-hint">
-            .{state.unitType}
-          </span>
+          <span className="file-extension-hint">.{state.unitType}</span>
         </div>
       </div>
 
@@ -415,7 +410,8 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
           + Add Section
         </button>
         <span className="add-section-hint">
-          Type any systemd section name (e.g., Unit, Service, Install, Timer, Socket, Mount, Automount, Path, Target)
+          Type any systemd section name (e.g., Unit, Service, Install, Timer, Socket, Mount,
+          Automount, Path, Target)
         </span>
       </div>
 

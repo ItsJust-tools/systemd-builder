@@ -113,9 +113,7 @@ export default function ToolClient() {
 
   const sidebarContent = <ToolSidebar state={tool.state.data} />;
 
-  const canvasContent = (
-    <ToolCanvas state={tool.state.data} onChange={handleStateChange} />
-  );
+  const canvasContent = <ToolCanvas state={tool.state.data} onChange={handleStateChange} />;
 
   const statusBarContent = (
     <>
@@ -134,7 +132,7 @@ export default function ToolClient() {
         )}
       </span>
       <span className="status-slot status-slot-unit-type">
-        {tool.state.data.unitType}.{tool.state.data.unitType}
+        {tool.state.data.unitName || 'unnamed'}.{tool.state.data.unitType}
       </span>
       <span className="status-slot status-slot-tool-version">Tool v{toolConfig.version}</span>
       <span className="status-slot status-slot-template-version">
