@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createMockToolState } from '@itsjust/core/testing';
 import { systemdTool, initialState } from '@/tool/tool-definition';
 import type { SystemdUnit } from '@/tool/types';
-import { generateUnitFile, getFilename, DEFAULT_SECTIONS } from '@/tool/types';
+import { generateUnitFile, getFilename, DEFAULT_SECTIONS, UNIT_PRESETS } from '@/tool/types';
 
 describe('systemd builder logic', () => {
   it('initializes with default state', () => {
@@ -172,6 +172,30 @@ describe('generateUnitFile', () => {
     expect(output).toContain('[Service]');
     expect(output).toContain('ExecStart=/bin/true');
   });
+
+  it('skips fields with empty keys or values', () => {
+    const unit: SystemdUnit = {
+      unitType: 'service',
+      unitName: 'test',
+      sections: [
+        {
+          name: 'Service',
+          fields: [
+            { key: 'ExecStart', value: '/bin/app' },
+            { key: '', value: 'orphan-value' },
+            { key: 'EmptyVal', value: '' },
+            { key: '', value: '' },
+          ],
+        },
+      ],
+    };
+
+    const output = generateUnitFile(unit);
+    expect(output).toContain('[Service]');
+    expect(output).toContain('ExecStart=/bin/app');
+    expect(output).not.toContain('orphan-value');
+    expect(output).not.toContain('EmptyVal=');
+  });
 });
 
 describe('getFilename', () => {
@@ -213,5 +237,49 @@ describe('DEFAULT_SECTIONS', () => {
     for (const t of types) {
       expect(DEFAULT_SECTIONS[t]).toContain('Unit');
     }
+  });
+});
+
+describe('UNIT_PRESETS', () => {
+  it('provides at least 3 presets', () => {
+    expect(UNIT_PRESETS.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('each preset has required fields', () => {
+    for (const preset of UNIT_PRESETS) {
+      expect(preset.name).toBeTruthy();
+      expect(preset.description).toBeTruthy();
+      expect(preset.icon).toBeTruthy();
+      expect(preset.template).toBeDefined();
+      expect(preset.template.unitType).toBeTruthy();
+      expect(preset.template.unitName).toBeTruthy();
+      expect(preset.template.sections.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('each preset template generates valid unit file output', () => {
+    for (const preset of UNIT_PRESETS) {
+      const output = generateUnitFile(preset.template);
+      expect(output).toBeTruthy();
+      expect(output).toContain(`[${preset.template.sections[0]?.name}]`);
+    }
+  });
+
+  it('each preset template has at least one field with key and value', () => {
+    for (const preset of UNIT_PRESETS) {
+      const allFields = preset.template.sections.flatMap((s) => s.fields);
+      const validFields = allFields.filter((f) => f.key && f.value);
+      expect(validFields.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('Web Application preset generates realistic service', () => {
+    const webPreset = UNIT_PRESETS.find((p) => p.name === 'Web Application');
+    expect(webPreset).toBeDefined();
+    const output = generateUnitFile(webPreset!.template);
+    expect(output).toContain('Type=simple');
+    expect(output).toContain('ExecStart=');
+    expect(output).toContain('Restart=on-failure');
+    expect(output).toContain('WantedBy=multi-user.target');
   });
 });

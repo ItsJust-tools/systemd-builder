@@ -9,6 +9,7 @@ import {
   SECTION_FIELD_SUGGESTIONS,
   TYPE_OPTIONS,
   RESTART_OPTIONS,
+  UNIT_PRESETS,
 } from '../types';
 
 interface ToolCanvasProps {
@@ -319,6 +320,20 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
     onChange({ ...state, sections: emptySections });
   }, [state, onChange]);
 
+  const loadPreset = useCallback(
+    (preset: (typeof UNIT_PRESETS)[number]) => {
+      onChange({
+        unitType: preset.template.unitType,
+        unitName: preset.template.unitName,
+        sections: preset.template.sections.map((s) => ({
+          name: s.name,
+          fields: s.fields.map((f) => ({ ...f })),
+        })),
+      });
+    },
+    [onChange]
+  );
+
   const handleCopy = useCallback(() => {
     const generated = generateUnitFile(state);
     navigator.clipboard.writeText(generated).then(() => {
@@ -381,6 +396,46 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
           ✕ Clear All Fields
         </button>
       </div>
+
+      {/* Quick Presets */}
+      {!hasAnyFields && (
+        <div className="presets-section">
+          <span className="presets-label">Quick Start:</span>
+          <div className="presets-list">
+            {UNIT_PRESETS.map((preset) => (
+              <button
+                key={preset.name}
+                type="button"
+                className="btn btn-preset"
+                onClick={() => loadPreset(preset)}
+                aria-label={`Load ${preset.name} preset`}
+                title={preset.description}
+              >
+                <span className="preset-icon" aria-hidden="true">
+                  {preset.icon}
+                </span>
+                <span className="preset-name">{preset.name}</span>
+              </button>
+            ))}
+            <button
+              type="button"
+              className="btn btn-preset btn-preset-blank"
+              onClick={() => {
+                onChange({
+                  ...state,
+                  sections: state.sections.map((s) => ({ ...s, fields: [] })),
+                });
+              }}
+              aria-label="Start from scratch"
+            >
+              <span className="preset-icon" aria-hidden="true">
+                📝
+              </span>
+              <span className="preset-name">Blank</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Section Editors */}
       <div className="sections-list">
