@@ -54,7 +54,9 @@ export function ToolSidebar({ state }: ToolSidebarProps) {
           </div>
           <div className="stat-row">
             <dt>Sections populated</dt>
-            <dd>{sectionsWithFields} / {state.sections.length}</dd>
+            <dd>
+              {sectionsWithFields} / {state.sections.length}
+            </dd>
           </div>
           <div className="stat-row">
             <dt>Fields configured</dt>
@@ -70,7 +72,9 @@ export function ToolSidebar({ state }: ToolSidebarProps) {
             {sectionCounts.map((s) => (
               <div key={s.name} className="stat-row">
                 <dt>[{s.name}]</dt>
-                <dd>{s.count} field{s.count !== 1 ? 's' : ''}</dd>
+                <dd>
+                  {s.count} field{s.count !== 1 ? 's' : ''}
+                </dd>
               </div>
             ))}
           </dl>
@@ -92,9 +96,13 @@ export function ToolSidebar({ state }: ToolSidebarProps) {
         <h3>Quick Tips</h3>
         <ul className="tips-list">
           <li>Type custom field names using the text inputs with autocomplete suggestions</li>
-          <li>Press <kbd>Enter</kbd> on the last field value to add another field</li>
+          <li>
+            Press <kbd>Enter</kbd> on the last field value to add another field
+          </li>
           <li>Changing Unit Type resets sections to defaults</li>
-          <li>Use the <strong>Preview</strong> button to see the raw systemd unit file</li>
+          <li>
+            Use the <strong>Preview</strong> button to see the raw systemd unit file
+          </li>
           <li>Export as image to share your configuration</li>
         </ul>
       </div>

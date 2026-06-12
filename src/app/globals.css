@@ -994,7 +994,10 @@ body {
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
-  transition: background-color 0.12s, border-color 0.12s, color 0.12s;
+  transition:
+    background-color 0.12s,
+    border-color 0.12s,
+    color 0.12s;
   white-space: nowrap;
 }
 
@@ -1203,7 +1206,10 @@ body {
   background: var(--card);
   color: var(--foreground);
   cursor: pointer;
-  transition: background-color 0.12s, border-color 0.12s, color 0.12s;
+  transition:
+    background-color 0.12s,
+    border-color 0.12s,
+    color 0.12s;
   font-family: inherit;
   white-space: nowrap;
 }

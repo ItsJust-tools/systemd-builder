@@ -11,9 +11,7 @@ function isSystemdUnitState(value: unknown): value is SystemdUnit {
     sections?: unknown;
   };
   return (
-    typeof v.unitType === 'string' &&
-    typeof v.unitName === 'string' &&
-    Array.isArray(v.sections)
+    typeof v.unitType === 'string' && typeof v.unitName === 'string' && Array.isArray(v.sections)
   );
 }
 
