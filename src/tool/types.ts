@@ -528,9 +528,7 @@ export const UNIT_PRESETS: UnitPreset[] = [
       sections: [
         {
           name: 'Unit',
-          fields: [
-            { key: 'Description', value: 'Watch config directory for changes' },
-          ],
+          fields: [{ key: 'Description', value: 'Watch config directory for changes' }],
         },
         {
           name: 'Path',

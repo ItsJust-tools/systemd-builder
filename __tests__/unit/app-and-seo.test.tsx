@@ -98,7 +98,8 @@ describe('app and seo', () => {
     });
     expect(systemdTool.deserialize({ nope: true })).toEqual({
       success: false,
-      error: 'Invalid data format: expected { unitType: string, unitName: string, sections: [{ name: string, fields: [{key: string, value: string}] }] }',
+      error:
+        'Invalid data format: expected { unitType: string, unitName: string, sections: [{ name: string, fields: [{key: string, value: string}] }] }',
     });
     expect(systemdTool.serialize(initialState)).toContain('"unitType"');
     expect(systemdTool.serialize(initialState)).toContain('"unitName"');
@@ -122,7 +123,9 @@ describe('app and seo', () => {
     );
 
     expect(screen.getByRole('link', { name: 'Open help page' })).toBeInTheDocument();
-    expect(screen.getByRole('application', { name: 'systemd Unit Builder canvas' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('application', { name: 'systemd Unit Builder canvas' })
+    ).toBeInTheDocument();
     expect(screen.getByLabelText('Unit Type')).toBeInTheDocument();
     expect(screen.getByLabelText('Unit Name')).toBeInTheDocument();
   });

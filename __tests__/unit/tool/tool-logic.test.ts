@@ -200,27 +200,25 @@ describe('generateUnitFile', () => {
 
 describe('getFilename', () => {
   it('returns correct service filename', () => {
-    expect(
-      getFilename({ unitType: 'service', unitName: 'my-app', sections: [] })
-    ).toBe('my-app.service');
+    expect(getFilename({ unitType: 'service', unitName: 'my-app', sections: [] })).toBe(
+      'my-app.service'
+    );
   });
 
   it('returns correct timer filename', () => {
-    expect(
-      getFilename({ unitType: 'timer', unitName: 'backup', sections: [] })
-    ).toBe('backup.timer');
+    expect(getFilename({ unitType: 'timer', unitName: 'backup', sections: [] })).toBe(
+      'backup.timer'
+    );
   });
 
   it('returns correct socket filename', () => {
-    expect(
-      getFilename({ unitType: 'socket', unitName: 'http', sections: [] })
-    ).toBe('http.socket');
+    expect(getFilename({ unitType: 'socket', unitName: 'http', sections: [] })).toBe('http.socket');
   });
 
   it('handles unnamed units', () => {
-    expect(
-      getFilename({ unitType: 'service', unitName: '', sections: [] })
-    ).toBe('unnamed.service');
+    expect(getFilename({ unitType: 'service', unitName: '', sections: [] })).toBe(
+      'unnamed.service'
+    );
   });
 });
 

@@ -2,7 +2,17 @@
   "name": "systemd-builder",
   "version": "1.1.0",
   "description": "A visual builder for systemd unit files — create and customize .service, .timer, .socket, .mount, and more.",
-  "keywords": ["systemd", "unit", "builder", "service", "timer", "socket", "mount", "systemd-unit", "itsjust"],
+  "keywords": [
+    "systemd",
+    "unit",
+    "builder",
+    "service",
+    "timer",
+    "socket",
+    "mount",
+    "systemd-unit",
+    "itsjust"
+  ],
   "private": true,
   "license": "MIT",
   "repository": {
@@ -63,7 +73,7 @@
     "@vitejs/plugin-react": "^6.0.2",
     "@vitest/coverage-v8": "^4.1.8",
     "depcheck": "^1.4.7",
-    "eslint": "^10.4.1",
+    "eslint": "^9",
     "eslint-config-next": "^16.2.7",
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",

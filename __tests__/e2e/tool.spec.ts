@@ -68,11 +68,13 @@ test('undo/redo buttons enable/disable correctly', async ({ page }, testInfo) =>
     await fileInput.setInputFiles({
       name: 'undo-mobile.json',
       mimeType: 'application/json',
-      buffer: Buffer.from(JSON.stringify({
-        unitType: 'service',
-        unitName: 'undo-test',
-        sections: [],
-      })),
+      buffer: Buffer.from(
+        JSON.stringify({
+          unitType: 'service',
+          unitName: 'undo-test',
+          sections: [],
+        })
+      ),
     });
   } else {
     await ensureToolbarInteractable(page);
@@ -121,8 +123,7 @@ test('sidebar toggle button works', async ({ page }) => {
     await sidebarToggle.click();
     await expect(sidebar).toHaveClass(/open/);
     const mobile =
-      (await page.viewportSize())?.width !== undefined &&
-      (await page.viewportSize())!.width <= 768;
+      (await page.viewportSize())?.width !== undefined && (await page.viewportSize())!.width <= 768;
     if (mobile) {
       await page.locator('.sidebar-backdrop').click();
     } else {
