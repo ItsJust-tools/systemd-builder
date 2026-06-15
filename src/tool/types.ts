@@ -13,7 +13,7 @@ export interface UnitSection {
  */
 export interface SystemdUnit {
   /** The type of systemd unit */
-  unitType: 'service' | 'timer' | 'socket' | 'mount' | 'automount' | 'path' | 'target';
+  unitType: 'service' | 'timer' | 'socket' | 'mount' | 'automount' | 'path' | 'target' | 'swap';
   /** The base filename (without extension) */
   unitName: string;
   /** Ordered list of sections in the unit file */
@@ -32,6 +32,7 @@ export const UNIT_TYPE_DESCRIPTIONS: Record<SystemdUnitType, string> = {
   automount: 'Automated mount point',
   path: 'Path-based activation',
   target: 'Grouping of units',
+  swap: 'Swap device activation',
 };
 
 /** Default section names for each unit type (used when switching types) */
@@ -43,6 +44,7 @@ export const DEFAULT_SECTIONS: Record<SystemdUnitType, string[]> = {
   automount: ['Unit', 'Automount', 'Install'],
   path: ['Unit', 'Path', 'Install'],
   target: ['Unit', 'Target'],
+  swap: ['Unit', 'Swap', 'Install'],
 };
 
 /**
@@ -374,6 +376,17 @@ export const SECTION_FIELD_SUGGESTIONS: Record<string, string[]> = {
     'RefuseManualStart',
     'RefuseManualStop',
   ],
+  Swap: [
+    'What',
+    'Priority',
+    'Options',
+    'TimeoutSec',
+    'NoSuid',
+    'NoDev',
+    'NoExec',
+    'ReadWriteOnly',
+    'RebootArgument',
+  ],
 };
 
 /** Options for the service Type directive */
@@ -574,6 +587,36 @@ export const UNIT_PRESETS: UnitPreset[] = [
       ],
     },
   },
+  {
+    name: 'Swap Device',
+    description: 'Activate a swap partition or file at boot',
+    icon: '💾',
+    template: {
+      unitType: 'swap',
+      unitName: 'swap-device',
+      sections: [
+        {
+          name: 'Unit',
+          fields: [
+            { key: 'Description', value: 'Swap device activation' },
+            { key: 'After', value: 'swap.target' },
+          ],
+        },
+        {
+          name: 'Swap',
+          fields: [
+            { key: 'What', value: '/dev/sdb2' },
+            { key: 'Priority', value: '10' },
+            { key: 'Options', value: 'discard' },
+          ],
+        },
+        {
+          name: 'Install',
+          fields: [{ key: 'WantedBy', value: 'swap.target' }],
+        },
+      ],
+    },
+  },
 ];
 
 /**
@@ -615,6 +658,7 @@ export function getFilename(unit: SystemdUnit): string {
     automount: '.automount',
     path: '.path',
     target: '.target',
+    swap: '.swap',
   };
   return `${unit.unitName || 'unnamed'}${typeSuffix[unit.unitType] || '.service'}`;
 }

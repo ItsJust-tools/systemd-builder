@@ -32,7 +32,7 @@ Built for [ItsJust](https://itsjust.app), a collection of small, focused web uti
 | `mount`     | Filesystem mount point    | Unit, Mount, Install     |
 | `automount` | Automated mount point     | Unit, Automount, Install |
 | `path`      | Path-based activation     | Unit, Path, Install      |
-| `target`    | Grouping of units         | Unit, Target             |
+| `swap`      | Swap device activation    | Unit, Swap, Install      |
 
 ## systemd Directives Reference
 
@@ -158,6 +158,15 @@ Execution environment and lifecycle:
 - **MakeDirectory / DirectoryMode** — Auto-create the watched directory
 - **Unit** — Unit to activate on path event
 - **TriggerLimitBurst / TriggerLimitIntervalSec** — Rate limiting
+
+### [Swap] Section
+
+- **What** — Block device or regular file to use as swap (e.g., `/dev/sdb2`, `/swapfile`)
+- **Priority** — Swap priority (higher numbers are used first; Linux default is -1)
+- **Options** — Additional mount-style options (`discard`, `nofail`, etc.)
+- **TimeoutSec** — Timeout for swap activation
+- **NoSuid / NoDev / NoExec / ReadWriteOnly** — Permission flags
+- **RebootArgument** — Argument for reboot if swap activation fails
 
 ### [Target] Section
 

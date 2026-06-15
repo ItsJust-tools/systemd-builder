@@ -30,7 +30,6 @@ function SectionFieldEditor({
   sectionIndex: number;
   onUpdateSection: (index: number, section: UnitSection) => void;
   onRemoveSection: (index: number) => void;
-  onAddSection: (afterIndex: number) => void;
   onMoveSection: (from: number, to: number) => void;
   onUpdateSectionName: (index: number, name: string) => void;
   sectionCount: number;
@@ -446,13 +445,25 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
             sectionIndex={i}
             onUpdateSection={updateSection}
             onRemoveSection={removeSection}
-            onAddSection={addSection}
             onMoveSection={moveSection}
             onUpdateSectionName={updateSectionName}
             sectionCount={state.sections.length}
           />
         ))}
       </div>
+
+      <datalist id="section-name-suggestions">
+        <option value="Unit" />
+        <option value="Service" />
+        <option value="Install" />
+        <option value="Timer" />
+        <option value="Socket" />
+        <option value="Mount" />
+        <option value="Automount" />
+        <option value="Path" />
+        <option value="Target" />
+        <option value="Swap" />
+      </datalist>
 
       {/* Add Section Button */}
       <div className="action-bar add-section-bar">
@@ -466,7 +477,7 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
         </button>
         <span className="add-section-hint">
           Type any systemd section name (e.g., Unit, Service, Install, Timer, Socket, Mount,
-          Automount, Path, Target)
+          Automount, Path, Target, Swap)
         </span>
       </div>
 
