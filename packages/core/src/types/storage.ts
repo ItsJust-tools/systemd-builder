@@ -21,6 +21,12 @@ export interface AutoSaveOptions {
   };
   historyStorage?: Pick<Storage, 'getItem' | 'setItem'>;
   historyNamespace?: string;
+  /**
+   * Invoked when a storage write/read fails (e.g. QuotaExceededError or
+   * SecurityError in private browsing). Use this to surface a non-intrusive
+   * warning toast without breaking the state flow.
+   */
+  onStorageError?: (error: unknown, key: string) => void;
 }
 
 export const defaultAutoSaveOptions: AutoSaveOptions = {

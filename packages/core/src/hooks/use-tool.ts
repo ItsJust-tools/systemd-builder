@@ -9,6 +9,7 @@ import { useExport } from './use-export';
 import { useImport } from './use-import';
 import { useToast } from '../components/toast';
 import { t } from '../i18n/strings';
+import { isQuotaExceededError } from '../utils/safe-storage';
 
 export interface UseToolResult<TState> {
   /** Managed tool state (undo/redo/auto-save) */
@@ -64,7 +65,16 @@ export function useTool<TState>(
     }
   }
 
-  const state = useToolState<TState>(tool.initialState, { key: canonicalId });
+  const { toast } = useToast();
+
+  const state = useToolState<TState>(tool.initialState, {
+    key: canonicalId,
+    onStorageError: (error) => {
+      if (isQuotaExceededError(error)) {
+        toast(t('storageQuotaExceeded'), 'error');
+      }
+    },
+  });
   const { exportTo, abortExport, supportedFormats, isExporting } = useExport(
     canvasRef,
     tool.config,
@@ -84,7 +94,6 @@ export function useTool<TState>(
       }
     },
   });
-  const { toast } = useToast();
 
   const handleExport = useCallback(
     async (format: ExportFormat) => {

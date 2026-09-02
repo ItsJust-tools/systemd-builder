@@ -165,4 +165,30 @@ describe('useToolState', () => {
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Quota exceeded'));
     warnSpy.mockRestore();
   });
+
+  it('invokes onStorageError callback when quota is exceeded', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const onStorageError = vi.fn();
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('Quota exceeded', 'QuotaExceededError');
+    });
+
+    const { result } = renderHook(() =>
+      useToolState('initial', {
+        key: 'test-quota-cb',
+        enabled: true,
+        debounceMs: 500,
+        onStorageError,
+      })
+    );
+
+    act(() => result.current.setData('change'));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+    });
+
+    expect(onStorageError).toHaveBeenCalled();
+    expect(onStorageError.mock.calls[0][0]).toBeInstanceOf(DOMException);
+    warnSpy.mockRestore();
+  });
 });

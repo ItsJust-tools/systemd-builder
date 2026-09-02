@@ -40,14 +40,30 @@ describe('StorageManager', () => {
     expect(manager.load<number[]>('array')).toEqual([1, 2, 3]);
   });
 
-  it('throws QuotaExceededError and logs warning', async () => {
+  it('handles QuotaExceededError defensively without throwing', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new DOMException('Quota exceeded', 'QuotaExceededError');
     });
 
-    await expect(manager.save('overflow', 'x'.repeat(1024))).rejects.toThrow();
+    // Defensive: save must not throw and must log a warning.
+    await expect(manager.save('overflow', 'x'.repeat(1024))).resolves.toBeUndefined();
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Quota exceeded'));
+    warnSpy.mockRestore();
+  });
+
+  it('invokes onStorageError handler on quota exceeded', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const onStorageError = vi.fn();
+    const managerWithHandler = new StorageManager('test', '1.0.0', 2048, onStorageError);
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('Quota exceeded', 'QuotaExceededError');
+    });
+
+    await managerWithHandler.save('overflow', 'x'.repeat(1024));
+    expect(onStorageError).toHaveBeenCalledTimes(1);
+    expect(onStorageError.mock.calls[0][0]).toBeInstanceOf(DOMException);
+    expect(onStorageError.mock.calls[0][1]).toBe('test:overflow');
     warnSpy.mockRestore();
   });
 
@@ -81,15 +97,15 @@ describe('StorageManager', () => {
     warnSpy.mockRestore();
   });
 
-  it('handles non-QuotaExceededError on save', async () => {
+  it('handles non-QuotaExceededError on save defensively', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('Storage blocked');
     });
 
-    await expect(manager.save('blocked', 'value')).rejects.toThrow('Storage blocked');
+    await expect(manager.save('blocked', 'value')).resolves.toBeUndefined();
     expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to save'),
+      expect.stringContaining('Failed to set'),
       expect.any(Error)
     );
     warnSpy.mockRestore();
