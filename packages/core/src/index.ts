@@ -107,3 +107,13 @@ export { ErrorBoundary } from './components/error-boundary/error-boundary';
 // i18n
 /** Minimal i18n string map and helper. */
 export { t } from './i18n/strings';
+
+// Utils
+/** Graceful clipboard helpers with legacy `execCommand('copy')` fallback. */
+export {
+  copyTextToClipboard,
+  copyWithExecCommand,
+  isClipboardApiAvailable,
+  isSecureContext,
+} from './utils/clipboard';
+export type { CopyResult } from './utils/clipboard';
