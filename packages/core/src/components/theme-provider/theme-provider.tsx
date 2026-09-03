@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { ToolTheme } from '../../types';
+import { safeGetItem, safeSetItem } from '../../utils/safe-storage';
 
 type Theme = 'light' | 'dark' | 'system';
 type ContrastMode = 'normal' | 'more' | 'system';
@@ -61,23 +62,19 @@ function applyToolTheme(toolTheme: ToolTheme, prev?: ToolTheme) {
 
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'system';
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw === 'light' || raw === 'dark' || raw === 'system') return raw;
-  } catch (error) {
+  const raw = safeGetItem(localStorage, STORAGE_KEY, (error) => {
     console.warn('[ThemeProvider] Failed to read theme from localStorage:', error);
-  }
+  });
+  if (raw === 'light' || raw === 'dark' || raw === 'system') return raw;
   return 'system';
 }
 
 function getInitialContrast(): ContrastMode {
   if (typeof window === 'undefined') return 'system';
-  try {
-    const raw = localStorage.getItem(CONTRAST_STORAGE_KEY);
-    if (raw === 'normal' || raw === 'more' || raw === 'system') return raw;
-  } catch (error) {
+  const raw = safeGetItem(localStorage, CONTRAST_STORAGE_KEY, (error) => {
     console.warn('[ThemeProvider] Failed to read contrast from localStorage:', error);
-  }
+  });
+  if (raw === 'normal' || raw === 'more' || raw === 'system') return raw;
   return 'system';
 }
 
@@ -112,11 +109,9 @@ export function ThemeProvider({
       const resolved = resolveTheme(t);
       setResolvedTheme(resolved);
       applyTheme(resolved);
-      try {
-        localStorage.setItem(STORAGE_KEY, t);
-      } catch (error) {
+      safeSetItem(localStorage, STORAGE_KEY, t, (error) => {
         console.warn('[ThemeProvider] Failed to save theme to localStorage:', error);
-      }
+      });
     },
     [resolveTheme]
   );
@@ -127,11 +122,9 @@ export function ThemeProvider({
       const resolved = resolveContrast(c);
       setResolvedContrast(resolved);
       applyContrast(resolved);
-      try {
-        localStorage.setItem(CONTRAST_STORAGE_KEY, c);
-      } catch (error) {
+      safeSetItem(localStorage, CONTRAST_STORAGE_KEY, c, (error) => {
         console.warn('[ThemeProvider] Failed to save contrast to localStorage:', error);
-      }
+      });
     },
     [resolveContrast]
   );

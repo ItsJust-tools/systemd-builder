@@ -1,5 +1,12 @@
 import type { StorageData } from '../types';
 import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
+import {
+  safeGetItem,
+  safeRemoveItem,
+  safeSetItem,
+  isQuotaExceededError,
+  type StorageErrorHandler,
+} from '../utils/safe-storage';
 
 export type StorageLoadStatus = 'missing' | 'ok' | 'corrupt';
 
@@ -12,17 +19,40 @@ export class StorageManager {
   private prefix: string;
   private defaultVersion?: string;
   private compressionThresholdBytes: number;
+  private onStorageError?: StorageErrorHandler;
 
-  constructor(prefix = 'itsjust', defaultVersion = '1.0.0', compressionThresholdBytes = 2048) {
+  constructor(
+    prefix = 'itsjust',
+    defaultVersion = '1.0.0',
+    compressionThresholdBytes = 2048,
+    onStorageError?: StorageErrorHandler
+  ) {
     this.prefix = prefix;
     this.defaultVersion = defaultVersion;
     this.compressionThresholdBytes = Math.max(0, compressionThresholdBytes);
+    this.onStorageError = onStorageError;
   }
 
   private key(k: string): string {
     return `${this.prefix}:${k}`;
   }
 
+  private handleError(error: unknown, key: string, action: 'set' | 'get' | 'remove') {
+    if (isQuotaExceededError(error)) {
+      console.warn(
+        `[StorageManager] Quota exceeded ${action === 'set' ? 'saving' : action === 'get' ? 'reading' : 'removing'} "${key}"`
+      );
+    } else {
+      console.warn(`[StorageManager] Failed to ${action} "${key}":`, error);
+    }
+    this.onStorageError?.(error, key, action);
+  }
+
+  /**
+   * Persist data to localStorage. Defensive: never throws — on failure it logs
+   * a warning and invokes the optional `onStorageError` handler so callers can
+   * surface a non-intrusive toast without breaking the state flow.
+   */
   async save<T>(key: string, data: T, version?: string): Promise<void> {
     const serialized = JSON.stringify(data);
     let storedData: unknown = data;
@@ -40,20 +70,15 @@ export class StorageManager {
       version: version ?? this.defaultVersion ?? '1.0.0',
       encoding,
     };
-    try {
-      localStorage.setItem(this.key(key), JSON.stringify(entry));
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        console.warn(`[StorageManager] Quota exceeded saving "${key}"`);
-      } else {
-        console.warn(`[StorageManager] Failed to save "${key}":`, error);
-      }
-      throw error;
-    }
+    safeSetItem(localStorage, this.key(key), JSON.stringify(entry), (error, k, action) =>
+      this.handleError(error, k, action)
+    );
   }
 
   loadEntry<T>(key: string, expectedVersion?: string): StorageLoadResult<T> {
-    const raw = localStorage.getItem(this.key(key));
+    const raw = safeGetItem(localStorage, this.key(key), (error, k, action) =>
+      this.handleError(error, k, action)
+    );
     if (!raw) return { status: 'missing', data: null };
     try {
       const entry: StorageData<unknown> = JSON.parse(raw);
@@ -84,7 +109,9 @@ export class StorageManager {
   }
 
   remove(key: string): void {
-    localStorage.removeItem(this.key(key));
+    safeRemoveItem(localStorage, this.key(key), (error, k, action) =>
+      this.handleError(error, k, action)
+    );
   }
 }
 

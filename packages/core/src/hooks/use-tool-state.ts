@@ -4,20 +4,23 @@ import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import type { AutoSaveOptions, ToolState } from '../types';
 import { defaultAutoSaveOptions } from '../types';
 import { StorageManager } from '../engines/storage-manager';
+import { safeGetItem, safeSetItem, isQuotaExceededError } from '../utils/safe-storage';
 
 const HISTORY_KEY = (key: string) => `itsjust:history:${key}`;
 const NAMESPACE_KEY = 'itsjust:storage-namespace';
 
-function initStorageNamespace(): string {
+function initStorageNamespace(onError?: (error: unknown, key: string) => void): string {
   if (typeof window === 'undefined') return 'default';
   try {
-    const existing = localStorage.getItem(NAMESPACE_KEY);
+    const existing = safeGetItem(localStorage, NAMESPACE_KEY, (error, key) =>
+      onError?.(error, key)
+    );
     if (existing) return existing;
     const created =
       typeof crypto !== 'undefined' && 'randomUUID' in crypto
         ? crypto.randomUUID()
         : `ns-${Date.now()}`;
-    localStorage.setItem(NAMESPACE_KEY, created);
+    safeSetItem(localStorage, NAMESPACE_KEY, created, (error, key) => onError?.(error, key));
     return created;
   } catch {
     return 'default';
@@ -39,12 +42,17 @@ function initStorageNamespace(): string {
  */
 export function useToolState<T>(initial: T, options: Partial<AutoSaveOptions> = {}): ToolState<T> {
   const opts = useMemo(() => ({ ...defaultAutoSaveOptions, ...options }), [options]);
-  const [storageNamespace] = useState(initStorageNamespace);
+  const [storageNamespace] = useState(() => initStorageNamespace(opts.onStorageError));
   const storage = useMemo(
     () =>
       opts.storageManager ??
-      new StorageManager(`itsjust:${storageNamespace}:${opts.key}`, opts.version ?? '1.0.0'),
-    [opts.key, opts.version, opts.storageManager, storageNamespace]
+      new StorageManager(
+        `itsjust:${storageNamespace}:${opts.key}`,
+        opts.version ?? '1.0.0',
+        2048,
+        (error, key) => opts.onStorageError?.(error, key)
+      ),
+    [opts.key, opts.version, opts.storageManager, storageNamespace, opts.onStorageError]
   );
   const historyStorage = useMemo(
     () => opts.historyStorage ?? (typeof window !== 'undefined' ? localStorage : undefined),
@@ -106,22 +114,22 @@ export function useToolState<T>(initial: T, options: Partial<AutoSaveOptions> = 
 
   // Persist history on change
   const persistHistory = useCallback(async () => {
-    try {
-      if (!historyStorage) return false;
-      historyStorage.setItem(
-        HISTORY_KEY(`${historyPrefix}:${opts.key}`),
-        JSON.stringify({ history: historyRef.current, future: futureRef.current })
-      );
-      return true;
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        console.warn(`[useToolState] Quota exceeded persisting history for "${opts.key}"`);
-      } else {
-        console.warn(`[useToolState] Failed to persist history for "${opts.key}"`, error);
+    if (!historyStorage) return false;
+    const ok = safeSetItem(
+      historyStorage,
+      HISTORY_KEY(`${historyPrefix}:${opts.key}`),
+      JSON.stringify({ history: historyRef.current, future: futureRef.current }),
+      (error, key) => {
+        opts.onStorageError?.(error, key);
+        if (isQuotaExceededError(error)) {
+          console.warn(`[useToolState] Quota exceeded persisting history for "${opts.key}"`);
+        } else {
+          console.warn(`[useToolState] Failed to persist history for "${opts.key}"`, error);
+        }
       }
-      return false;
-    }
-  }, [opts.key, historyPrefix, historyStorage]);
+    );
+    return ok;
+  }, [opts.key, historyPrefix, historyStorage, opts.onStorageError]);
 
   useEffect(() => {
     if (!opts.enabled) return;
