@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState, useRef } from 'react';
+import { copyTextToClipboard } from '@itsjust/core';
 import type { SystemdUnit, UnitSection } from '../types';
 import {
   generateUnitFile,
@@ -333,13 +334,14 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
     [onChange]
   );
 
-  const handleCopy = useCallback(() => {
+  const handleCopy = useCallback(async () => {
     const generated = generateUnitFile(state);
-    navigator.clipboard.writeText(generated).then(() => {
+    const result = await copyTextToClipboard(generated);
+    if (result.success) {
       setCopied(true);
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
       copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
-    });
+    }
   }, [state]);
 
   const generated = generateUnitFile(state);
