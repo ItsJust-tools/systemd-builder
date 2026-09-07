@@ -23,6 +23,7 @@ const mockImport = vi.fn();
 const mockToolbarActions = { canUndo: true, canRedo: true, onUndo: vi.fn(), onRedo: vi.fn() };
 
 vi.mock('@itsjust/core', () => ({
+  copyTextToClipboard: vi.fn().mockResolvedValue({ success: true }),
   ToolShell: ({ toolbar, sidebar, canvas, statusBar }: Record<string, unknown>) => (
     <div>
       <div>{toolbar as ReactNode}</div>
@@ -104,5 +105,48 @@ describe('app client and help page', () => {
     });
 
     expect(mockToast).toHaveBeenCalled();
+  });
+
+  it('suppresses user abort AbortError from web share without showing an error toast', async () => {
+    Object.defineProperty(navigator, 'share', {
+      writable: true,
+      value: vi.fn().mockRejectedValue(Object.assign(new Error('Share canceled'), { name: 'AbortError' })),
+    });
+    const clipboardSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined);
+    mockToast.mockReset();
+
+    await act(async () => {
+      render(<ToolClient />);
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('trigger-share'));
+    });
+
+    // AbortError must be swallowed silently - no error toast, no unhandled rejection.
+    expect(mockToast).not.toHaveBeenCalledWith(expect.stringContaining('Failed'), 'error');
+    // The user cancelled the share sheet, so no fallback copy is performed either.
+    expect(clipboardSpy).not.toHaveBeenCalled();
+
+    clipboardSpy.mockRestore();
+  });
+
+  it('falls back to clipboard copy on unexpected web share errors', async () => {
+    Object.defineProperty(navigator, 'share', {
+      writable: true,
+      value: vi.fn().mockRejectedValue(new Error('Share failed')),
+    });
+    mockToast.mockReset();
+
+    await act(async () => {
+      render(<ToolClient />);
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('trigger-share'));
+    });
+
+    // Non-abort share errors are not silently swallowed - they fall back to clipboard copy.
+    expect(mockToast).toHaveBeenCalledWith('Share URL copied to clipboard', 'success');
   });
 });
