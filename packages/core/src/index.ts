@@ -117,3 +117,5 @@ export {
   isSecureContext,
 } from './utils/clipboard';
 export type { CopyResult } from './utils/clipboard';
+/** Sanitize filenames against invalid OS characters and enforce a max length. */
+export { sanitizeFilename } from './utils/sanitize-filename';
