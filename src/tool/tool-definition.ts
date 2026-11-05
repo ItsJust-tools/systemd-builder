@@ -29,14 +29,23 @@ export const systemdTool: Tool<SystemdUnit> = {
   initialState,
   serialize: (state) => JSON.stringify(state, null, 2),
   deserialize: (data) => {
-    if (isSystemdUnitState(data)) {
-      return { success: true, data };
+    try {
+      if (isSystemdUnitState(data)) {
+        return { success: true, data };
+      }
+      return {
+        success: false,
+        error:
+          'Invalid data format: expected { unitType: string, unitName: string, sections: [{ name: string, fields: [{key: string, value: string}] }] }',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Failed to deserialize state: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+      };
     }
-    return {
-      success: false,
-      error:
-        'Invalid data format: expected { unitType: string, unitName: string, sections: [{ name: string, fields: [{key: string, value: string}] }] }',
-    };
   },
   exporters: [
     { format: 'png', loader: () => import('./exporters/png') },
