@@ -11,6 +11,8 @@ import {
   TYPE_OPTIONS,
   RESTART_OPTIONS,
   UNIT_PRESETS,
+  SECURITY_PRESETS,
+  applySecurityDirectives,
 } from '../types';
 import { validateUnit, type ValidationIssue } from '../validation';
 
@@ -439,6 +441,35 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Security & Sandboxing Presets */}
+      {!hasAnyFields && (
+        <details className="presets-section security-presets">
+          <summary className="presets-label">🛡️ Security &amp; Sandboxing Presets</summary>
+          <div className="presets-list">
+            {SECURITY_PRESETS.map((preset) => (
+              <button
+                key={preset.name}
+                type="button"
+                className="btn btn-preset"
+                onClick={() =>
+                  onChange({
+                    ...state,
+                    sections: applySecurityDirectives(state.sections, preset.directives),
+                  })
+                }
+                aria-label={`Apply ${preset.name} security directives`}
+                title={preset.description}
+              >
+                <span className="preset-icon" aria-hidden="true">
+                  {preset.icon}
+                </span>
+                <span className="preset-name">{preset.name}</span>
+              </button>
+            ))}
+          </div>
+        </details>
       )}
 
       {/* Section Editors */}

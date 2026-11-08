@@ -411,6 +411,114 @@ export const RESTART_OPTIONS = [
 ];
 
 /**
+ * Security & Sandboxing directive presets.
+ * Each preset provides recommended systemd isolation directives that can be
+ * merged into the [Service] section with one click.
+ * See: https://www.freedesktop.org/software/systemd/man/security.html
+ */
+export interface SecurityPreset {
+  /** Display name for the preset */
+  name: string;
+  /** Short description of the protection level */
+  description: string;
+  /** Icon for the accordion entry */
+  icon: string;
+  /** Recommended isolation directives */
+  directives: Array<{ key: string; value: string }>;
+}
+
+/**
+ * Built-in security & sandboxing presets.
+ * Directives follow modern systemd security guidelines.
+ */
+export const SECURITY_PRESETS: SecurityPreset[] = [
+  {
+    name: 'Basic Hardening',
+    description: 'Core isolation: prevents privilege escalation and protects base directories',
+    icon: '🛡️',
+    directives: [
+      { key: 'NoNewPrivileges', value: 'yes' },
+      { key: 'ProtectSystem', value: 'strict' },
+      { key: 'ProtectHome', value: 'yes' },
+      { key: 'PrivateTmp', value: 'yes' },
+    ],
+  },
+  {
+    name: 'Strict Sandboxing',
+    description: 'Aggressive isolation: restricts kernel, devices, networking namespaces and syscalls',
+    icon: '🔒',
+    directives: [
+      { key: 'NoNewPrivileges', value: 'yes' },
+      { key: 'ProtectSystem', value: 'strict' },
+      { key: 'ProtectHome', value: 'yes' },
+      { key: 'PrivateTmp', value: 'yes' },
+      { key: 'PrivateDevices', value: 'yes' },
+      { key: 'ProtectKernelTunables', value: 'yes' },
+      { key: 'ProtectKernelModules', value: 'yes' },
+      { key: 'ProtectControlGroups', value: 'yes' },
+      { key: 'ProtectClock', value: 'yes' },
+      { key: 'ProtectHostname', value: 'yes' },
+      { key: 'ProtectKernelLogs', value: 'yes' },
+      { key: 'ProtectProc', value: 'invisible' },
+      { key: 'RestrictAddressFamilies', value: 'AF_UNIX AF_INET AF_INET6' },
+      { key: 'RestrictNamespaces', value: 'yes' },
+      { key: 'RestrictRealtime', value: 'yes' },
+      { key: 'RestrictSUIDSGID', value: 'yes' },
+      { key: 'LockPersonality', value: 'yes' },
+      { key: 'MemoryDenyWriteExecute', value: 'yes' },
+      { key: 'SystemCallFilter', value: '@system-service' },
+      { key: 'SystemCallArchitectures', value: 'native' },
+      { key: 'CapabilityBoundingSet', value: '' },
+      { key: 'UMask', value: '0077' },
+    ],
+  },
+];
+
+/**
+ * Merges security directives into a unit's sections with one click.
+ * Directives replace existing fields with the same key in the [Service]
+ * section (or create it when missing); all other sections are preserved.
+ *
+ * @param sections - Current unit sections
+ * @param directives - Security directives to merge
+ * @returns New sections array (originals are not mutated)
+ */
+export function applySecurityDirectives(
+  sections: UnitSection[],
+  directives: SecurityPreset['directives']
+): UnitSection[] {
+  const serviceIndex = sections.findIndex((s) => s.name === 'Service');
+  const existing = serviceIndex >= 0 ? sections[serviceIndex] : null;
+  const fields = existing ? existing.fields.map((f) => ({ ...f })) : [];
+  const keys = new Set(fields.map((f) => f.key));
+
+  for (const directive of directives) {
+    if (keys.has(directive.key)) {
+      for (const field of fields) {
+        if (field.key === directive.key) {
+          field.value = directive.value;
+        }
+      }
+    } else {
+      fields.push({ key: directive.key, value: directive.value });
+      keys.add(directive.key);
+    }
+  }
+
+  const serviceSection: UnitSection = { name: 'Service', fields };
+  if (serviceIndex >= 0) {
+    return sections.map((s, i) => (i === serviceIndex ? serviceSection : s));
+  }
+  const insertAt = sections.findIndex((s) => s.name === 'Install');
+  if (insertAt >= 0) {
+    const next = [...sections];
+    next.splice(insertAt, 0, serviceSection);
+    return next;
+  }
+  return [...sections, serviceSection];
+}
+
+/**
  * Common systemd unit file presets for quick-start.
  * Each preset provides a name, description, and sections/fields to pre-fill.
  */
