@@ -12,6 +12,7 @@ import {
   RESTART_OPTIONS,
   UNIT_PRESETS,
 } from '../types';
+import { validateUnit, type ValidationIssue } from '../validation';
 
 interface ToolCanvasProps {
   state: SystemdUnit;
@@ -345,6 +346,8 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
   }, [state]);
 
   const generated = generateUnitFile(state);
+  const issues: ValidationIssue[] = useMemo(() => validateUnit(state), [state]);
+  const hasErrors = issues.some((i) => i.severity === 'error');
 
   return (
     <div className="systemd-canvas" role="application" aria-label="systemd Unit Builder canvas">
@@ -482,6 +485,27 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
           Automount, Path, Target, Swap)
         </span>
       </div>
+
+      {/* Validation Panel */}
+      {issues.length > 0 && (
+        <div className={`validation-panel ${hasErrors ? 'validation-panel-errors' : 'validation-panel-warnings'}`} aria-live="polite">
+          <p className="validation-title" role="status">
+            {hasErrors ? '⚠ Validation problems' : 'ℹ Validation hints'}
+          </p>
+          <ul className="validation-list">
+            {issues.map((issue, i) => (
+              <li
+                key={i}
+                className={`validation-item validation-${issue.severity}`}
+                data-section={issue.section || undefined}
+                data-directive={issue.directive || undefined}
+              >
+                {issue.severity === 'error' ? '❌' : '⚠️'} {issue.message}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Preview Section */}
       <div className="preview-section">

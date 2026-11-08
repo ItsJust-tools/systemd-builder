@@ -6,6 +6,8 @@ export { ToolCanvas } from './components/tool-canvas';
 export { ToolToolbar } from './components/tool-toolbar';
 export { ToolSidebar } from './components/tool-sidebar';
 export type { SystemdUnit, UnitSection, SystemdUnitType } from './types';
+export { validateUnit, EXEC_PATH_DIRECTIVES } from './validation';
+export type { ValidationIssue, ValidationSeverity } from './validation';
 export {
   generateUnitFile,
   getFilename,

@@ -26,9 +26,9 @@ describe('safe-storage', () => {
     });
     expect(safeSetItem(localStorage, 'k', 'v', onError)).toBe(false);
     expect(onError).toHaveBeenCalledTimes(1);
-    expect(onError.mock.calls[0][0]).toBeInstanceOf(DOMException);
-    expect(onError.mock.calls[0][1]).toBe('k');
-    expect(onError.mock.calls[0][2]).toBe('set');
+    expect(onError.mock.calls[0]?.[0]).toBeInstanceOf(DOMException);
+    expect(onError.mock.calls[0]?.[1]).toBe('k');
+    expect(onError.mock.calls[0]?.[2]).toBe('set');
   });
 
   it('safeSetItem catches SecurityError (private browsing) and returns false', () => {
@@ -47,7 +47,7 @@ describe('safe-storage', () => {
     });
     expect(safeGetItem(localStorage, 'k', onError)).toBeNull();
     expect(onError).toHaveBeenCalledTimes(1);
-    expect(onError.mock.calls[0][2]).toBe('get');
+    expect(onError.mock.calls[0]?.[2]).toBe('get');
   });
 
   it('safeGetItem returns stored value on success', () => {
@@ -62,7 +62,7 @@ describe('safe-storage', () => {
     });
     expect(safeRemoveItem(localStorage, 'k', onError)).toBe(false);
     expect(onError).toHaveBeenCalledTimes(1);
-    expect(onError.mock.calls[0][2]).toBe('remove');
+    expect(onError.mock.calls[0]?.[2]).toBe('remove');
   });
 
   it('safeRemoveItem returns true on success', () => {
