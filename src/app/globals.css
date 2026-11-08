@@ -1060,6 +1060,40 @@ body {
   background: transparent;
 }
 
+/* Validation panel */
+.validation-panel {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  border: 1px solid var(--border);
+}
+.validation-panel-errors {
+  border-color: #e5484d;
+  background: rgba(229, 72, 77, 0.08);
+}
+.validation-panel-warnings {
+  border-color: #f5a623;
+  background: rgba(245, 166, 35, 0.08);
+}
+.validation-title {
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+.validation-list {
+  margin: 0;
+  padding-left: 18px;
+}
+.validation-item {
+  margin: 2px 0;
+}
+.validation-error {
+  color: #e5484d;
+}
+.validation-warning {
+  color: #c77b1e;
+}
+
 .preview-section {
   display: flex;
   flex-direction: column;

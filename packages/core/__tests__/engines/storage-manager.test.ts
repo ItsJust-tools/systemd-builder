@@ -62,8 +62,9 @@ describe('StorageManager', () => {
 
     await managerWithHandler.save('overflow', 'x'.repeat(1024));
     expect(onStorageError).toHaveBeenCalledTimes(1);
-    expect(onStorageError.mock.calls[0][0]).toBeInstanceOf(DOMException);
-    expect(onStorageError.mock.calls[0][1]).toBe('test:overflow');
+    const firstCall = onStorageError.mock.calls[0];
+    expect(firstCall?.[0]).toBeInstanceOf(DOMException);
+    expect(firstCall?.[1]).toBe('test:overflow');
     warnSpy.mockRestore();
   });
 

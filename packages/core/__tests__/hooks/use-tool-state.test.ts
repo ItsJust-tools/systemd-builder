@@ -188,7 +188,7 @@ describe('useToolState', () => {
     });
 
     expect(onStorageError).toHaveBeenCalled();
-    expect(onStorageError.mock.calls[0][0]).toBeInstanceOf(DOMException);
+    expect(onStorageError.mock.calls[0]?.[0]).toBeInstanceOf(DOMException);
     warnSpy.mockRestore();
   });
 });
