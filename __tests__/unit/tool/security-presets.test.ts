@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import type { SystemdUnit } from '@/tool/types';
-import { generateUnitFile, DEFAULT_SECTIONS, SECURITY_PRESETS, applySecurityDirectives } from '@/tool/types';
+import {
+  generateUnitFile,
+  DEFAULT_SECTIONS,
+  SECURITY_PRESETS,
+  applySecurityDirectives,
+} from '@/tool/types';
 
 const serviceUnit = (): SystemdUnit => ({
   unitType: 'service',
@@ -96,8 +101,12 @@ describe('applySecurityDirectives', () => {
   it('preserves non-Service sections untouched', () => {
     const unit = serviceUnit();
     const result = applySecurityDirectives(unit.sections, [{ key: 'PrivateTmp', value: 'yes' }]);
-    expect(result.find((s) => s.name === 'Unit')).toEqual(unit.sections.find((s) => s.name === 'Unit'));
-    expect(result.find((s) => s.name === 'Install')).toEqual(unit.sections.find((s) => s.name === 'Install'));
+    expect(result.find((s) => s.name === 'Unit')).toEqual(
+      unit.sections.find((s) => s.name === 'Unit')
+    );
+    expect(result.find((s) => s.name === 'Install')).toEqual(
+      unit.sections.find((s) => s.name === 'Install')
+    );
   });
 
   it('security preset output renders into the generated unit file', () => {

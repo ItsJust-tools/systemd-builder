@@ -213,7 +213,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Project Structure
 
-```
+```text
 src/
 ├── app/           # Next.js App Router pages
 │   ├── globals.css  # Global styles + theme variables

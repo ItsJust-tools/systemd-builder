@@ -445,7 +445,8 @@ export const SECURITY_PRESETS: SecurityPreset[] = [
   },
   {
     name: 'Strict Sandboxing',
-    description: 'Aggressive isolation: restricts kernel, devices, networking namespaces and syscalls',
+    description:
+      'Aggressive isolation: restricts kernel, devices, networking namespaces and syscalls',
     icon: '🔒',
     directives: [
       { key: 'NoNewPrivileges', value: 'yes' },

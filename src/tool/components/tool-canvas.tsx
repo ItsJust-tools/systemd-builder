@@ -519,7 +519,10 @@ export function ToolCanvas({ state, onChange }: ToolCanvasProps) {
 
       {/* Validation Panel */}
       {issues.length > 0 && (
-        <div className={`validation-panel ${hasErrors ? 'validation-panel-errors' : 'validation-panel-warnings'}`} aria-live="polite">
+        <div
+          className={`validation-panel ${hasErrors ? 'validation-panel-errors' : 'validation-panel-warnings'}`}
+          aria-live="polite"
+        >
           <p className="validation-title" role="status">
             {hasErrors ? '⚠ Validation problems' : 'ℹ Validation hints'}
           </p>

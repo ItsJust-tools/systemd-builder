@@ -110,7 +110,9 @@ describe('app client and help page', () => {
   it('suppresses user abort AbortError from web share without showing an error toast', async () => {
     Object.defineProperty(navigator, 'share', {
       writable: true,
-      value: vi.fn().mockRejectedValue(Object.assign(new Error('Share canceled'), { name: 'AbortError' })),
+      value: vi
+        .fn()
+        .mockRejectedValue(Object.assign(new Error('Share canceled'), { name: 'AbortError' })),
     });
     const clipboardSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined);
     mockToast.mockReset();

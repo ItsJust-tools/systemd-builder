@@ -112,7 +112,10 @@ describe('validateUnit', () => {
   it('does not require ExecStart for non-service unit types', () => {
     const unit = makeUnit({
       unitType: 'timer',
-      sections: [{ name: 'Unit', fields: [] }, { name: 'Timer', fields: [] }],
+      sections: [
+        { name: 'Unit', fields: [] },
+        { name: 'Timer', fields: [] },
+      ],
     });
     expect(validateUnit(unit).some((i) => i.directive === 'ExecStart')).toBe(false);
   });
